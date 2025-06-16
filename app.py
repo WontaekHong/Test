@@ -8,7 +8,7 @@ from PIL import Image
 from io import BytesIO
 
 st.set_page_config(page_title="OCR 가계부 자동화", layout="centered")
-st.title("📸 OCR 기반 모바일 가계부 자동 정리")
+st.title("📸 OCR 기반 3 모바일 가계부 자동 정리")
 
 uploaded_file = st.file_uploader("이미지 업로드 (JPG, PNG)", type=["jpg", "jpeg", "png"])
 
