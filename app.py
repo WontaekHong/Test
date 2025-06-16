@@ -3,9 +3,9 @@ import pandas as pd
 import pytesseract 
 import cv2 
 import numpy as np 
-import re from PIL 
-import Image from io 
-import BytesIO
+import re 
+from PIL import Image 
+from io import BytesIO
 
 st.set_page_config(page_title="OCR 가계부 자동화", layout="centered") st.title("📸 OCR 기반 모바일 가계부 자동 정리") st.write("이미지를 업로드하면 자동으로 날짜, 금액, 사용처를 추출하고 카테고리까지 분류하여 엑셀로 저장해줍니다.")
 
