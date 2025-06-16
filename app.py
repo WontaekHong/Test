@@ -13,7 +13,36 @@ st.write("이미지를 업로드하면 날짜, 금액, 사용처, 카테고리�
 
 # 이미지 업로드
 uploaded_file = st.file_uploader("이미지 업로드 (JPG, PNG)", type=["jpg", "jpeg", "png"])
+# 파일 업로드 후
+if uploaded_file:
+    st.success("✅ 파일 업로드 성공!")
+    
+    # 이미지 표시
+    try:
+        image = Image.open(uploaded_file).convert("RGB")
+        st.image(image, caption="업로드한 이미지", use_column_width=True)
+    except Exception as e:
+        st.error(f"❌ 이미지 열기 실패: {e}")
+        st.stop()
 
+    try:
+        # OpenCV 처리
+        image_np = np.array(image)
+        gray = cv2.cvtColor(image_np, cv2.COLOR_RGB2GRAY)
+        thresh = cv2.threshold(gray, 180, 255, cv2.THRESH_BINARY)[1]
+
+        # OCR
+        text = pytesseract.image_to_string(thresh, lang='kor+eng')
+        st.markdown("### 📝 OCR 결과")
+        st.code(text)
+
+        if not text.strip():
+            st.warning("❗ OCR에서 아무 텍스트도 추출되지 않았습니다.\n더 선명한 이미지를 사용하거나 해상도를 높여보세요.")
+            st.stop()
+
+    except Exception as e:
+        st.error(f"❌ OCR 처리 중 오류 발생: {e}")
+        st.stop()
 if uploaded_file:
     # 이미지 표시
     image = Image.open(uploaded_file).convert("RGB")
