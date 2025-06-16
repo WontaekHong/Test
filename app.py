@@ -8,7 +8,7 @@ from PIL import Image
 from io import BytesIO
 
 st.set_page_config(page_title="OCR 가계부 자동화", layout="centered")
-st.title("📸 OCR 기반 모바일 가계부 자동 정리")
+st.title("📸 OCR 2 기반 모바일 가계부 자동 정리")
 st.write("이미지를 업로드하면 날짜, 금액, 사용처, 카테고리를 자동으로 추출하여 엑셀로 저장해줍니다.")
 
 # 이미지 업로드
