@@ -9,22 +9,30 @@ from io import BytesIO
 
 st.set_page_config(page_title="OCR 가계부 자동화", layout="centered")
 st.title("📸 OCR 기반 모바일 가계부 자동 정리")
-st.write("이미지를 업로드하면 자동으로 날짜, 금액, 사용처를 추출하고 카테고리까지 분류하여 엑셀로 저장해줍니다.")
+st.write("이미지를 업로드하면 날짜, 금액, 사용처, 카테고리를 자동으로 추출하여 엑셀로 저장해줍니다.")
 
 # 이미지 업로드
 uploaded_file = st.file_uploader("이미지 업로드 (JPG, PNG)", type=["jpg", "jpeg", "png"])
 
 if uploaded_file:
+    # 이미지 표시
     image = Image.open(uploaded_file).convert("RGB")
+    st.image(image, caption="업로드된 이미지 미리보기", use_column_width=True)
+
+    # OpenCV 전처리
     image_np = np.array(image)
     gray = cv2.cvtColor(image_np, cv2.COLOR_RGB2GRAY)
     thresh = cv2.threshold(gray, 180, 255, cv2.THRESH_BINARY)[1]
 
-    # OCR 추출
+    # OCR 실행
     text = pytesseract.image_to_string(thresh, lang='kor+eng')
     lines = text.split('\n')
 
-    # 날짜 및 카테고리 패턴 정의
+    # OCR 결과 출력
+    st.markdown("### 📝 OCR 인식된 텍스트")
+    st.code(text)
+
+    # 날짜 패턴 및 카테고리 패턴
     date_pattern = r"20\d{2}[.\-/년 ]\d{1,2}[.\-/월 ]\d{1,2}"
     current_date = ""
 
@@ -47,12 +55,12 @@ if uploaded_file:
         if not line:
             continue
 
-        # 날짜 인식
+        # 날짜 갱신
         if re.search(date_pattern, line):
             current_date = re.sub(r"[^\d-]", "-", re.search(date_pattern, line).group()).strip("-")
             continue
 
-        # 금액 인식
+        # 금액 추출
         match = re.search(r"(-?\d{1,3}(,\d{3})*|\d{4,})", line.replace(" ", ""))
         if match:
             amount_str = match.group().replace(",", "")
@@ -78,19 +86,21 @@ if uploaded_file:
                 "비고": ""
             })
 
-    # 데이터프레임 생성
-    df = pd.DataFrame(parsed)
-    st.success("✅ 분석 완료! 아래에서 결과를 확인하세요")
-    st.dataframe(df)
+    if parsed:
+        df = pd.DataFrame(parsed)
+        st.success("✅ 분석 완료! 아래에서 결과를 확인하세요")
+        st.dataframe(df)
 
-    # 엑셀 다운로드
-    output = BytesIO()
-    df.to_excel(output, index=False)
-    output.seek(0)
+        # 엑셀 다운로드
+        output = BytesIO()
+        df.to_excel(output, index=False)
+        output.seek(0)
 
-    st.download_button(
-        label="📥 엑셀 다운로드",
-        data=output,
-        file_name="가계부_OCR_자동정리.xlsx",
-        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-    )
+        st.download_button(
+            label="📥 엑셀 다운로드",
+            data=output,
+            file_name="가계부_OCR_자동정리.xlsx",
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
+    else:
+        st.warning("⚠️ 텍스트 인식 또는 지출 내역 파싱에 실패했습니다.\n더 명확하고 선명한 이미지를 업로드해 주세요.")
